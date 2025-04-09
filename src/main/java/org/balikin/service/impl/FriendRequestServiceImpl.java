@@ -70,14 +70,53 @@ public class FriendRequestServiceImpl implements FriendRequestService {
         return allFriendRequest.stream().map(friendRequest -> {
             RequestFriendResponseDto dto = new RequestFriendResponseDto();
             dto.setId(friendRequest.getId());
-            dto.setReceived_email(friendRequest.getTo().getEmail());
-            dto.setReceived_name(friendRequest.getTo().getUsername());
-            dto.setSender_email(friendRequest.getSender().getEmail());
-            dto.setSender_name(friendRequest.getSender().getUsername());
             dto.setSent_at(friendRequest.getCreatedDate());
             dto.setStatus(friendRequest.getStatus());
+
+            if (Long.valueOf(friendRequest.getSender().getId()).equals(senderId)) {
+                dto.setSender_email(friendRequest.getSender().getEmail());
+                dto.setSender_name(friendRequest.getSender().getUsername());
+                dto.setReceived_email(friendRequest.getTo().getEmail());
+                dto.setReceived_name(friendRequest.getTo().getUsername());
+                dto.setImage_url(friendRequest.getTo().getImageUrl());
+            } else {
+                dto.setSender_email(friendRequest.getTo().getEmail());
+                dto.setSender_name(friendRequest.getTo().getUsername());
+                dto.setReceived_email(friendRequest.getSender().getEmail());
+                dto.setReceived_name(friendRequest.getSender().getUsername());
+                dto.setImage_url(friendRequest.getSender().getImageUrl());
+            }
+
             return dto;
         }).toList();
+
+    }
+
+    @Override
+    public List<RequestFriendResponseDto> getStatusPending() throws Exception {
+        String id = securityIdentity.getPrincipal().getName();
+        Long senderId = Long.parseLong(id);
+
+        List<FriendRequest> allFriendRequest = friendRequestRepository
+                .find("sender.id = ?1 or to.id = ?1", senderId)
+                .list();
+
+        return allFriendRequest.stream()
+                .filter(friendRequest -> !Long.valueOf(friendRequest.getSender().getId()).equals(senderId) && friendRequest.getStatus().equals(FriendRequest.FriendRequestStatus.PENDING))
+                .map(friendRequest -> {
+                    RequestFriendResponseDto dto = new RequestFriendResponseDto();
+                    dto.setId(friendRequest.getId());
+                    dto.setSent_at(friendRequest.getCreatedDate());
+                    dto.setStatus(friendRequest.getStatus());
+                    dto.setSender_email(friendRequest.getTo().getEmail());
+                    dto.setSender_name(friendRequest.getTo().getUsername());
+                    dto.setReceived_email(friendRequest.getSender().getEmail());
+                    dto.setReceived_name(friendRequest.getSender().getUsername());
+                    dto.setImage_url(friendRequest.getSender().getImageUrl());
+
+                    return dto;
+                })
+                .toList();
     }
 
     @Override

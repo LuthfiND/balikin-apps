@@ -10,6 +10,8 @@ import java.util.Optional;
 public interface FriendRequestService {
      Optional<FriendRequestDto> FriendRequest(String to) throws Exception;
      List<RequestFriendResponseDto> getAllRequest(String status) throws Exception;
+     List<RequestFriendResponseDto> getStatusPending() throws Exception;
+
      RequestFriendResponseDto getRequestById (Long id) throws Exception;
      void ApproveOrRejectRequest (Long id,String status) throws Exception;
 

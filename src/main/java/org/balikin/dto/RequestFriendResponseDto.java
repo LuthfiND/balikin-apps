@@ -20,5 +20,6 @@ public class RequestFriendResponseDto {
     private String received_name;
     private Date sent_at;
     private FriendRequest.FriendRequestStatus status;
+    private String image_url;
 
 }

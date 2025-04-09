@@ -10,6 +10,7 @@ import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.SecurityContext;
 import lombok.extern.slf4j.Slf4j;
 import org.balikin.dto.BalikinUtangRequest;
+import org.balikin.dto.TotalUtangPiutangDto;
 import org.balikin.dto.UtangDto;
 import org.balikin.dto.UtangRequestDto;
 import org.balikin.entity.Utang;
@@ -96,5 +97,12 @@ public class UtangPiutangResource {
         UtangDto result = utangPiutangServiceImpl.getUtangById(id);
         return new ApiResponse<UtangDto>("success", result, 200);
     };
+
+    @GET
+    @Path("/total-utang-piutang")
+    public ApiResponse<TotalUtangPiutangDto> getTotalUtangPiutang () throws Exception {
+        TotalUtangPiutangDto totalUtang =  utangPiutangServiceImpl.getTotalUtangPiutang();
+        return new ApiResponse<TotalUtangPiutangDto>("success", totalUtang, 200);
+    }
 
 }

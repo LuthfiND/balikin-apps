@@ -9,6 +9,7 @@ import jakarta.ws.rs.BadRequestException;
 import jakarta.ws.rs.InternalServerErrorException;
 import jakarta.ws.rs.core.Request;
 import lombok.extern.slf4j.Slf4j;
+import org.balikin.dto.TotalUtangPiutangDto;
 import org.balikin.dto.UtangDto;
 import org.balikin.dto.UtangRequestDto;
 import org.balikin.entity.Auth;
@@ -21,6 +22,7 @@ import org.balikin.service.utang.UtangPiutangService;
 import org.balikin.util.FormatRupiahUtil;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
+import java.math.BigDecimal;
 import java.util.*;
 
 @Slf4j
@@ -185,5 +187,27 @@ public class UtangPiutangServiceImpl implements UtangPiutangService {
         utang.setTransactionType(userById.get().getTransactionType());
         utang.setTransactionDate(userById.get().getTransactionDate());
         return utang;
+    }
+
+    @Override
+    public TotalUtangPiutangDto getTotalUtangPiutang() throws Exception {
+        String userId = securityIdentity.getPrincipal().getName();
+        Double totalUtang = utangPiutangRepository
+                .find("SELECT SUM(amount) FROM Utang WHERE user.id = ?1 AND transactionType = ?2",
+                        Integer.parseInt(userId),
+                        Utang.TransactionType.UTANG)
+                .project(Double.class)
+                .firstResult();
+    Double totalPiutang = utangPiutangRepository.find("SELECT SUM(amount) FROM Utang WHERE user.id = ?1 AND transactionType = ?2",
+            Integer.parseInt(userId),
+            Utang.TransactionType.PIUTANG)
+            .project(Double.class)
+            .firstResult();
+    int totalPiutangInt = totalPiutang != null ? totalPiutang.intValue() : 0;
+    int totalUtangInt = totalUtang != null ? totalUtang.intValue() : 0;
+    TotalUtangPiutangDto totalUtangPiutangDto = new TotalUtangPiutangDto();
+    totalUtangPiutangDto.setTotalUtang(totalUtangInt);
+    totalUtangPiutangDto.setTotalPiutang(totalPiutangInt);
+    return totalUtangPiutangDto;
     }
 }

@@ -6,6 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import lombok.extern.slf4j.Slf4j;
+import org.balikin.dto.ApproveRequestDto;
 import org.balikin.dto.FriendRequestDto;
 import org.balikin.dto.RequestFriendResponseDto;
 import org.balikin.model.ApiResponse;
@@ -50,6 +51,15 @@ public class FriendRequestResource {
         }
         return new ApiResponse<List<RequestFriendResponseDto>>("success", allFriendRequest, 200);
     }
+    @GET
+    @Path("request-pending")
+    public ApiResponse<List<RequestFriendResponseDto>> getPendingRequest() throws Exception {
+        List<RequestFriendResponseDto> allFriendRequest = friendRequestService.getStatusPending();
+        if (allFriendRequest.isEmpty()) {
+            return new ApiResponse<>("Data Tidak ditemukan", null, 400);
+        }
+        return new ApiResponse<List<RequestFriendResponseDto>>("success", allFriendRequest, 200);
+    }
 
     @GET
     @Path("request/{id}")
@@ -63,8 +73,8 @@ public class FriendRequestResource {
     @Path("approve-or-rejected")
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    public ApiResponse<?> approveOrReject (@QueryParam("status") String status, @QueryParam("id") Long id) throws Exception {
-        friendRequestService.ApproveOrRejectRequest(id,status);
+    public ApiResponse<?> approveOrReject (ApproveRequestDto approveRequestDto) throws Exception {
+        friendRequestService.ApproveOrRejectRequest(approveRequestDto.id,approveRequestDto.status);
         return new ApiResponse<>("Success", null, 200);
     }
 
