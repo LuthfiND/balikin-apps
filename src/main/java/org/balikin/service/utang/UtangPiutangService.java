@@ -17,6 +17,7 @@ public interface UtangPiutangService {
      String balikinUtang (String email, Double paymentAmount, Long Id) throws Exception;
      UtangDto getUtangById (String id) throws Exception;
      TotalUtangPiutangDto getTotalUtangPiutang () throws Exception;
+     void sendToInbox() throws Exception;
 
 
 }

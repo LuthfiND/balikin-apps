@@ -14,15 +14,19 @@ import org.balikin.dto.UtangDto;
 import org.balikin.dto.UtangRequestDto;
 import org.balikin.entity.Auth;
 import org.balikin.entity.FriendRequest;
+import org.balikin.entity.Inbox;
 import org.balikin.entity.Utang;
 import org.balikin.repository.AuthRepository;
 import org.balikin.repository.FriendRequestRepository;
+import org.balikin.repository.InboxRepository;
 import org.balikin.repository.UtangPiutangRepository;
 import org.balikin.service.utang.UtangPiutangService;
 import org.balikin.util.FormatRupiahUtil;
 import org.eclipse.microprofile.config.inject.ConfigProperty;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.*;
 
 @Slf4j
@@ -32,6 +36,8 @@ public class UtangPiutangServiceImpl implements UtangPiutangService {
     UtangPiutangRepository utangPiutangRepository;
     @Inject
     AuthRepository authRepository;
+    @Inject
+    InboxRepository inboxRepository;
     @Inject
     FriendRequestRepository friendRequestRepository;
     @Inject
@@ -210,4 +216,31 @@ public class UtangPiutangServiceImpl implements UtangPiutangService {
     totalUtangPiutangDto.setTotalPiutang(totalPiutangInt);
     return totalUtangPiutangDto;
     }
+
+    @Transactional
+    @Override
+    public void sendToInbox() throws Exception {
+        List<Utang> utang = utangPiutangRepository
+                .find("transactionType = ?1", Utang.TransactionType.UTANG)
+                .list();
+        LocalDate today = LocalDate.now();
+        List<Utang> utangHariIni = utang.stream()
+                .filter(item -> item.getTransactionDate().toInstant()
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                        .isEqual(today))
+                .toList();
+        for (Utang item : utangHariIni) {
+            boolean ifExistUtangById = inboxRepository.find("utang_id = ? 1",item.getId()).firstResultOptional().isPresent();
+            if (ifExistUtangById) {
+                Inbox inbox = new Inbox();
+                inbox.setUtang(item);
+                inbox.setMessage("Anda memiliki hutang yang sudah jatuh tempo kepada " + item.getReceiver().getEmail() + "pada tanggal " + item.getTransactionDate().toInstant().atZone(ZoneId.systemDefault()).toLocalDate());
+                inbox.setCreatedDate(Date.from(today.atStartOfDay(ZoneId.systemDefault()).toInstant()));
+                inboxRepository.persist(inbox);
+            }
+
+        }
+    }
+
 }
