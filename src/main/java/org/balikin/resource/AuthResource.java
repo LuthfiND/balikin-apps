@@ -39,6 +39,7 @@ public class AuthResource {
                 .entity(Map.of("message", "Successfully Registered"))
                 .build();
     }
+
     @POST
     @Transactional
     @Path("login")
@@ -50,6 +51,7 @@ public class AuthResource {
         LoginResponseDto response = authServiceImpl.login(loginDto);
         return new ApiResponse<LoginResponseDto>("Login Success",response , 200);
     }
+
     @POST
     @Transactional
     @Path("update-profile")
@@ -58,8 +60,8 @@ public class AuthResource {
     public ApiResponse<String> updateProfile (UploadFileDto urlImage) throws Exception {
         authServiceImpl.updateProfile(urlImage);
         return new ApiResponse<String>("Success Update Profile", null , 200);
-
     }
+
     @GET
     @Path("profile")
     @Produces(MediaType.APPLICATION_JSON)
